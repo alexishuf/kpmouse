@@ -46,7 +46,7 @@ build/%.o : %.c build/%.d
 
 # Link compilation units
 build/kpmouse: $(OBJS)
-	$(CC) -Wall -Werror -std=c11 $(CFLAGS) $(LFLAGS) -o $@ $^ $(LIBS)
+	$(CC) -Wall -Werror -std=c99 $(CFLAGS) $(LFLAGS) -o $@ $^ $(LIBS)
 	cp build/kpmouse $(OUTPUT)
 
 # Clean build files and the output binary

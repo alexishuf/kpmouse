@@ -6,6 +6,7 @@
 #include <string.h>
 #include <xdo.h>
 #include <X11/Xlib.h>
+#include <time.h>
 
 // KPM_LOG_STEPS must fit in a char
 extern int ASSERT_KPM_LOG_STEPS_max[KPM_LOG_STEPS >= 256 ? -1 : 1];
@@ -73,6 +74,20 @@ static void kpm_add_move(int* x, int* y, int step_x, int step_y,
   *y += step_y;
 }
 
+/** Sets st->move_ts and returns non-zero iff the move in st was not expired */
+static int kpm_set_move_ts(kpm_st_t* st) {
+  struct timespec ts;
+  if (KPM_CHK(clock_gettime, CLOCK_MONOTONIC, &ts))
+    return 1; //assume non-expired
+  long long int age = (ts.tv_sec - st->move_ts.tv_sec)*1000;
+  if (age == 0)
+    age += (ts.tv_nsec - st->move_ts.tv_nsec)/1000000L;
+  else
+    age += 1000 - st->move_ts.tv_nsec/1000000L + ts.tv_nsec/1000000L;
+  st->move_ts = ts;
+  return age < st->move_ttl_ms;
+}
+
 
 ////////////////////////////////////
 // public functions
@@ -87,9 +102,9 @@ int kpm_st_init(kpm_st_t* st) {
   }
   st->max_log_steps = KPM_LOG_STEPS;
   st->expected_linear_steps = KPM_LINEAR_STEPS;
-  int err = kpm_st_reset(st);
-  if (err)
-    return err;
+  st->move_ttl_ms = KPM_MOVE_TTL_MS;
+  KPM_RET2(KPM_ERR_GETTIME, clock_gettime, CLOCK_MONOTONIC, &st->move_ts);
+  KPM_RET(kpm_st_reset, st);
   st->step_x = st->w/(1<<st->max_log_steps)/st->expected_linear_steps;
   st->step_y = st->h/(1<<st->max_log_steps)/st->expected_linear_steps;
   for (int i = 0; i < 8; ++i) {
@@ -147,7 +162,9 @@ int kpm_st_reset(kpm_st_t* st) {
 int kpm_st_move(kpm_st_t* st, kpm_move_t move) {
   int x, y, screen;
   KPM_RET2(KPM_ERR_XDO_GET_MOUSE, xdo_get_mouse_location,
-           st->xdo, &x, &y, &screen)
+           st->xdo, &x, &y, &screen);
+  if (!kpm_set_move_ts(st))
+    st->log_steps = 0; //expired move
   if (st->log_steps == 0 && st->max_log_steps > 0) {
     kpm_st_reset2(st, screen);
     x = st->w/2;
@@ -167,10 +184,12 @@ int kpm_st_move(kpm_st_t* st, kpm_move_t move) {
 }
 
 int kpm_st_unmove(kpm_st_t* st) {
+  if (!kpm_set_move_ts(st))
+    st->log_steps = 0; //expired move
   if (!st->log_steps)
     return KPM_SUCCESS;
-  int screen = kpm_st_get_screen(st);
 
+  int screen = kpm_st_get_screen(st);
   if (st->log_steps >= st->max_log_steps) { //undo all linear steps
     --st->log_steps;
     return MOVE_MOUSE(st->xdo, st->log_x, st->log_y, screen);

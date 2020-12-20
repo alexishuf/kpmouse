@@ -1,11 +1,13 @@
-#include <string.h>
-#include <stdio.h>
 #include "state.h"
 #include "event_loop.h"
+#include <string.h>
+#include <stdio.h>
 #include <X11/Xlib.h>
+
 
 #define G_ERR_BUF_LEN 1024
 static char g_err_buf[G_ERR_BUF_LEN];
+
 
 static int err_handler(Display* dsp, XErrorEvent* evt) {
   memset(g_err_buf, 0, G_ERR_BUF_LEN);
@@ -15,6 +17,7 @@ static int err_handler(Display* dsp, XErrorEvent* evt) {
           evt->request_code, evt->minor_code, evt->serial, evt->resourceid);
   return 0;
 }
+
 
 int main(int argc, char** argv) {
   kpm_st_t st;

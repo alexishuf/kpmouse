@@ -28,6 +28,11 @@
 #define KPM_LINEAR_STEPS 5
 
 /**
+ * How many millisconds of inactivity cancel a movement.
+ */
+#define KPM_MOVE_TTL_MS 4000
+
+/**
  * Array with a KeySym (see X11/keysymdef.h) for each kpm_move_t constant
  */
 extern KeySym kpm_move_sym[8];

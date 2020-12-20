@@ -1,8 +1,10 @@
 #ifndef _KPMOUSE_STATE_H_
 #define _KPMOUSE_STATE_H_
 
+#include "config.h"
 #include "user_config.h"
 #include "errors.h"
+#include <time.h>
 
 ////////////////////////////////////////////
 // Third paty forward declarations
@@ -116,6 +118,17 @@ typedef struct kpm_st_s {
 
   /** Linear step size (after maximum log steps performed) */
   short step_x, step_y;
+
+  /** clock timestamp of last move (log or linear).  */
+  struct timespec move_ts;
+
+  /**
+   * How may milliseconds a move survives inactivity. If current time is more
+   * than move_ttl_ms milliseconds from move_ts, then the move operation is
+   * expired. Further kpm_st_move() operations will start a new move from
+   * scratch.
+   */
+  unsigned int move_ttl_ms;
 
   /** move_code[m] is the KeyCode that should trigger the kpm_move_t m */
   KeyCode move_code[8];

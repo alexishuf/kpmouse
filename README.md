@@ -35,8 +35,8 @@ Movements can be reversed using the 0 key on the numeric keypad. During logarith
 
 Movement terminates when any of these occur:
 
-- 2 seconds elapsed since the last step
-- A click or button press/release has been ordered
+- 4 seconds (`KPM_MOVE_TTL_MS`) elapsed since the last step
+- A mouse button press/release/click (`/`, `*`, `-`)
 
 Buttons
 ---------

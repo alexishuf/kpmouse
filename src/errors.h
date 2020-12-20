@@ -17,6 +17,7 @@
 #define KPM_ERR_X_GRAB         8
 #define KPM_ERR_X_SEL_INPUT    9
 #define KPM_ERR_X_NEXT_EVT     10
+#define KPM_ERR_GETTIME        11
 /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */
 
 ////////////////////////////////////////////
