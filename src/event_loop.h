@@ -6,6 +6,8 @@
 ////////////////////////////////////////////
 
 #include "config.h"
+#include "state.h"
+#include <time.h>
 
 ////////////////////////////////////////////
 // Forward declarations
@@ -15,6 +17,9 @@ typedef struct kpm_st_s kpm_st_t;
 
 typedef struct kpm_el_s {
   kpm_st_t* st;
+  kpm_button_t pressed_button;
+  struct timespec press_ts;
+  unsigned int long_press_ms;
 } kpm_el_t;
 
 ////////////////////////////////////////////

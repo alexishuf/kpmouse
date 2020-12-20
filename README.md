@@ -46,13 +46,13 @@ Mouse buttons:
 - Middle button: `*`
 - Right button: `-`
 
-Clicking is done by "clicking" the corresponding key. If the key is held by more than 500ms, the mouse button **down** event is sent, but the release of the key will **not** cause the corresponding mouse button **up** event. To trigger the button up event, "click" the mouse button key again.
+Clicking is done by "clicking" the corresponding key. If the key is held by more than 400ms (`KPM_LONG_PRESS_MS`), the mouse button **down** event is sent, but the release of the key will **not** cause the corresponding mouse button **up** event. To trigger the button up event, "click" the mouse button key again.
 
 With a mouse button **down** , situations may occur:
 - If a key different from the one that caused the button **down** event is pressed, the button **up** event will be of the mouse button that was originally pressed. That is, a long press of `/` followed by movement and then a click on `*` will count a drag using the left mouse button and will not cause a click of the middle button.
 - There is no expiration time that would cause a **up** event of the pressed mouse button
 - Undoing movement will not undo the button **down** event nor will send a **up** event
-- After a **down** event, a long press (more than 500ms) on any mouse button key will have no effect
+- After a **down** event, a long press (more than `KPM_LONG_PRESS_MS`) on any mouse button key will have no effect
 
 Compilation
 --------------

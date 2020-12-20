@@ -1,12 +1,12 @@
 
 #include "state.h"
+#include "util.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include <xdo.h>
 #include <X11/Xlib.h>
-#include <time.h>
 
 // KPM_LOG_STEPS must fit in a char
 extern int ASSERT_KPM_LOG_STEPS_max[KPM_LOG_STEPS >= 256 ? -1 : 1];
@@ -76,15 +76,7 @@ static void kpm_add_move(int* x, int* y, int step_x, int step_y,
 
 /** Sets st->move_ts and returns non-zero iff the move in st was not expired */
 static int kpm_set_move_ts(kpm_st_t* st) {
-  struct timespec ts;
-  if (KPM_CHK(clock_gettime, CLOCK_MONOTONIC, &ts))
-    return 1; //assume non-expired
-  long long int age = (ts.tv_sec - st->move_ts.tv_sec)*1000;
-  if (age == 0)
-    age += (ts.tv_nsec - st->move_ts.tv_nsec)/1000000L;
-  else
-    age += 1000 - st->move_ts.tv_nsec/1000000L + ts.tv_nsec/1000000L;
-  st->move_ts = ts;
+  long int age = kpm__ms_elapsed_upd(&st->move_ts);
   return age < st->move_ttl_ms;
 }
 

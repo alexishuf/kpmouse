@@ -33,6 +33,15 @@
 #define KPM_MOVE_TTL_MS 4000
 
 /**
+ * If a kpm_button_sym remains pressed for more than KPM_LONG_PRESS_MS
+ * milliseconds, the key release event will not trigger a mouse button up event.
+ * The mouse button up event will only be triggered by a second KeyPress of a
+ * mouse button and the KeyRelease of that second press will not trigger a
+ * second mouse button up.
+ */
+#define KPM_LONG_PRESS_MS 300
+
+/**
  * Array with a KeySym (see X11/keysymdef.h) for each kpm_move_t constant
  */
 extern KeySym kpm_move_sym[8];

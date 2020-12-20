@@ -1,5 +1,6 @@
 #include "event_loop.h"
 #include "state.h"
+#include "util.h"
 #include <X11/Xlib.h>
 #include <xdo.h>
 #include <stdlib.h>
@@ -28,7 +29,11 @@ static kpm_button_t to_button(kpm_el_t* el, KeyCode code) {
 }
 
 static int send_mouse(kpm_el_t* el, kpm_button_t button, char down) {
+#ifndef NDEBUG
+  printf("send_mouse(%d, %s)\n", button, down ? "DOWN" : "UP");
+#endif
   if (down) {
+
     return KPM_CHK2(KPM_ERR_XDO_MOUSE_DOWN, xdo_mouse_down,
                     el->st->xdo, CURRENTWINDOW, button+1);
   } else {
@@ -37,6 +42,27 @@ static int send_mouse(kpm_el_t* el, kpm_button_t button, char down) {
   }
 }
 
+static int handle_button(kpm_el_t* el, kpm_button_t button, int press) {
+  if (press) {
+    if (el->pressed_button == KPM_NULL_BUTTON) {
+      el->pressed_button = button;
+      KPM_CHK2(KPM_ERR_GETTIME, clock_gettime,
+               CLOCK_MONOTONIC, &el->press_ts);
+      KPM_RET(send_mouse, el, button, 1); //send "down"
+    } else if (kpm__ms_elapsed(&el->press_ts) > el->long_press_ms) {
+      KPM_RET(send_mouse, el, el->pressed_button, 0); // long press, send "up"
+      el->pressed_button = KPM_NULL_BUTTON;
+    } // else: ignore second button in double press
+  } else if (el->pressed_button != KPM_NULL_BUTTON) {
+    if (kpm__ms_elapsed(&el->press_ts) < el->long_press_ms) {
+      KPM_RET(send_mouse, el, el->pressed_button, 0); //clicked, send "up"
+      el->pressed_button = KPM_NULL_BUTTON;
+    } // else: started a long press, do not send up
+  } //else: ignore orphan release
+  return KPM_SUCCESS;
+}
+
+
 ////////////////////////////////////
 // public functions
 ////////////////////////////////////
@@ -44,6 +70,8 @@ static int send_mouse(kpm_el_t* el, kpm_button_t button, char down) {
 int kpm_el_init(kpm_el_t* el, kpm_st_t* st) {
   memset(el, 0, sizeof(kpm_el_t));
   el->st = st;
+  el->pressed_button = KPM_NULL_BUTTON;
+  el->long_press_ms = KPM_LONG_PRESS_MS;
   int n_screens = ScreenCount(st->xdo->xdpy);
   for (int screen = 0; screen < n_screens; ++screen) {
     Window root          = RootWindow(st->xdo->xdpy, screen);
@@ -106,8 +134,7 @@ int kpm_el_step(kpm_el_t* el) {
   } else {
     kpm_button_t button = to_button(el, ev.xkey.keycode);
     if (button != KPM_NULL_BUTTON) {
-      //TODO: implement stopwatch to ignore release after 500ms
-      send_mouse(el, button, ev.type == KeyPress);
+      KPM_RET(handle_button, el, button, ev.type == KeyPress);
     } else {
       const char* ev_type = ev.type==KeyPress ? "press" : "release";
       fprintf(stderr, "kpm_el_step() ignoring unexpected %s on keycode %d,"
