@@ -8,6 +8,7 @@
 #include "config.h"
 #include "state.h"
 #include <time.h>
+#include <X11/X.h>
 
 ////////////////////////////////////////////
 // Forward declarations
@@ -20,6 +21,18 @@ typedef struct kpm_el_s {
   kpm_button_t pressed_button;
   struct timespec press_ts;
   unsigned int long_press_ms;
+
+  /** move_code[m] is the KeyCode that should trigger the kpm_move_t m */
+  KeyCode move_code[8];
+
+  /**
+   * button_code[0:2] is the KeyCode that should trigger the left, middle or
+   * right mouse button
+   */
+  KeyCode button_code[6];
+
+  /** KeyCode for KPM_UNDO_SYM */
+  KeyCode undo_code;
 } kpm_el_t;
 
 ////////////////////////////////////////////

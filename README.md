@@ -29,7 +29,7 @@ After executing the step, the movement window changes to have **half** its width
 
 These logarithmic steps can be executed up to `KPM_LOG_STEPS` (by default 4, see `user_config.h`) times in sequence. After this limit, movement becomes linear while obeying the same key-direction relation. The step size during linear movement is determined by dividing the width and height of the last logarithmic movement window by `KPM_LINEAR_STEPS` (by default 5). Once linear movement is activated, the linear movement will continue until the movement is **terminated**.
 
-Movements can be reversed using the 0 key on the numeric keypad. During logarithmic movement, reversion simply undoes the last movement, until the mouse pointer reaches the center of the screen. Once linear movement has started, reverting the last step will reverse **all linear steps**, reverting the movement to the last logarithmic movement (thus linear movement can start from scratch).
+Movements can be reversed using the `0` key on the numeric keypad. During logarithmic movement, reversion simply undoes the last movement, until the mouse pointer reaches the center of the screen. Once linear movement has started, reverting the last step will reverse **all linear steps**, reverting the movement to the last logarithmic movement (thus linear movement can start from scratch).
 
 ### Movement termination
 

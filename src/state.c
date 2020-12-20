@@ -45,21 +45,13 @@ static void kpm_add_move(int* x, int* y, int step_x, int step_y,
   assert(!(move & ~0x7));
   move &= 0x7; // ignore invalid bits
 
-  int negative = -1, positive = 1;
+  int negative = reverse ? 1 : -1, positive = reverse ? -1 : 1;
   if (move & 0x1) { //move over cross
     switch(move>>1) {
-    case 0:
-      step_y *= negative;
-    case 1:
-      step_y *= positive;
-      step_x  = 0;
-      break;
-    case 2:
-      step_x *= negative;
-    case 3:
-      step_x *= positive;
-      step_y  = 0;
-      break;
+    case 0: step_y *= negative; step_x = 0; break;
+    case 1: step_y *= positive; step_x = 0; break;
+    case 2: step_x *= negative; step_y = 0; break;
+    case 3: step_x *= positive; step_y = 0; break;
     }
   } else { // move to rectangle center
     step_y *= (move & 4) ? positive : negative;
@@ -99,44 +91,21 @@ int kpm_st_init(kpm_st_t* st) {
   KPM_RET(kpm_st_reset, st);
   st->step_x = st->w/(1<<st->max_log_steps)/st->expected_linear_steps;
   st->step_y = st->h/(1<<st->max_log_steps)/st->expected_linear_steps;
-  for (int i = 0; i < 8; ++i) {
-    st->move_code[i] = XKeysymToKeycode(st->xdo->xdpy, kpm_move_sym[i]);
-    if (!st->move_code[i]) {
-      fprintf(stderr, "No KeyCode for KeySym %lx of move %d\n",
-              kpm_move_sym[i], i);
-      return KPM_ERR_NO_KEYCODE;
-    }
-  }
-  for (int i = 0; i < 6; ++i) {
-    st->button_code[i] = XKeysymToKeycode(st->xdo->xdpy, kpm_button_sym[i]);
-    if (!st->button_code[i]) {
-      fprintf(stderr, "No KeyCode for KeySym %lx of mouse button %d\n",
-              kpm_move_sym[i], i);
-      return KPM_ERR_NO_KEYCODE;
-    }
-  }
 #ifdef NDEBUG
   printf("kpm_st_init(%p) {\n"
-         "w = %d,\n"
-         "h = %d,\n"
-         "log_steps = %d,\n"
-         "log_x = %d,\n"
-         "log_y = %d,\n"
-         "max_log_steps = %d,\n"
-         "expected_linear_steps = %d,\n"
-         "step_x = %d,\n"
-         "step_y = %d,\n"
-         "move_code = {%d, %d, %d, %d, %d, %d, %d, %d}\n"
-         "move_button = {%d, %d, %d, %d, %d, %d}\n"
+         "  w = %d,\n"
+         "  h = %d,\n"
+         "  log_steps = %d,\n"
+         "  log_x = %d,\n"
+         "  log_y = %d,\n"
+         "  max_log_steps = %d,\n"
+         "  expected_linear_steps = %d,\n"
+         "  step_x = %d,\n"
+         "  step_y = %d\n"
          "}\n",
          st, st->w, st->h, st->log_steps,
          st->log_x, st->log_y, st->max_log_steps,
-         st->expected_linear_steps, st->step_x, st->step_y,
-         st->move_code[0], st->move_code[1], st->move_code[2],
-         st->move_code[3], st->move_code[4], st->move_code[5],
-         st->move_code[6], st->move_code[7],
-         st->button_code[0], st->button_code[1], st->button_code[2],
-         st->button_code[3], st->button_code[4], st->button_code[5]);
+         st->expected_linear_steps, st->step_x, st->step_y);
 #endif /*NDEBUG*/
   return KPM_SUCCESS;
 }
@@ -189,10 +158,9 @@ int kpm_st_unmove(kpm_st_t* st) {
   } // else: undo a log step
 
   kpm_add_move(&st->log_x, &st->log_y, st->w/2, st->h/2,
-               st->history[st->log_steps], 1);
+               st->history[--st->log_steps], 1);
   st->w *= 2;
   st->h *= 2;
-  --st->log_steps;
 
   return MOVE_MOUSE(st->xdo, st->log_x, st->log_y, screen);
 }

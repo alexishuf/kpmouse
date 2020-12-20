@@ -57,5 +57,11 @@ extern KeySym kpm_move_sym[8];
  */
 extern KeySym kpm_button_sym[6];
 
+/**
+ * This key causes the last ste to be undone (if in linear movement, this
+ * returns to the position after the last log step).
+ */
+#define KPM_UNDO_SYM XK_KP_Insert
+
 #endif /*_KPMOUSE_USERCONFIG_H_*/
 

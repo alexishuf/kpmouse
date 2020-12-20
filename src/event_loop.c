@@ -2,6 +2,7 @@
 #include "state.h"
 #include "util.h"
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <xdo.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,14 +17,14 @@ static const int N_MOD_MASKS = 1<<(Mod5MapIndex+1);
 
 static kpm_move_t to_move(kpm_el_t* el, KeyCode code) {
   for (int i = 0; i < 8; ++i)
-    if (el->st->move_code[i] == code)
+    if (el->move_code[i] == code)
       return i;
   return KPM_NULL_MOVE;
 }
 
 static kpm_button_t to_button(kpm_el_t* el, KeyCode code) {
   for (int i = 0; i < 6; ++i)
-    if (el->st->button_code[i] == code)
+    if (el->button_code[i] == code)
       return i%3;
   return KPM_NULL_BUTTON;
 }
@@ -62,6 +63,30 @@ static int handle_button(kpm_el_t* el, kpm_button_t button, int press) {
   return KPM_SUCCESS;
 }
 
+static int setup_codes(kpm_el_t* el) {
+  for (int i = 0; i < 8; ++i) {
+    el->move_code[i] = XKeysymToKeycode(el->st->xdo->xdpy, kpm_move_sym[i]);
+    if (!el->move_code[i]) {
+      fprintf(stderr, "No KeyCode for KeySym %lx of move %d\n",
+              kpm_move_sym[i], i);
+      return KPM_ERR_NO_KEYCODE;
+    }
+  }
+  for (int i = 0; i < 6; ++i) {
+    el->button_code[i] = XKeysymToKeycode(el->st->xdo->xdpy, kpm_button_sym[i]);
+    if (!el->button_code[i]) {
+      fprintf(stderr, "No KeyCode for KeySym %lx of mouse button %d\n",
+              kpm_move_sym[i], i);
+      return KPM_ERR_NO_KEYCODE;
+    }
+  }
+  el->undo_code = XKeysymToKeycode(el->st->xdo->xdpy, KPM_UNDO_SYM);
+  if (!el->undo_code) {
+    fprintf(stderr, "No KeyCode for KeySym %x of undo key\n", KPM_UNDO_SYM);
+    return KPM_ERR_NO_KEYCODE;
+  }
+  return KPM_SUCCESS;
+}
 
 ////////////////////////////////////
 // public functions
@@ -72,6 +97,7 @@ int kpm_el_init(kpm_el_t* el, kpm_st_t* st) {
   el->st = st;
   el->pressed_button = KPM_NULL_BUTTON;
   el->long_press_ms = KPM_LONG_PRESS_MS;
+  setup_codes(el);
   int n_screens = ScreenCount(st->xdo->xdpy);
   for (int screen = 0; screen < n_screens; ++screen) {
     Window root          = RootWindow(st->xdo->xdpy, screen);
@@ -82,14 +108,17 @@ int kpm_el_init(kpm_el_t* el, kpm_st_t* st) {
     for (int modMask = 0; modMask < N_MOD_MASKS; ++modMask) {
       if (modMask & Mod2Mask)
         continue; // skip masks with NumLock
+      KPM_BRET(KPM_ERR_X_GRAB, XGrabKey, st->xdo->xdpy,
+               el->undo_code, modMask, root,
+               owner_events, pointer_mode, keyboard_mode);
       for (int i = 0; i < 8; ++i) {
         KPM_BRET(KPM_ERR_X_GRAB, XGrabKey, st->xdo->xdpy,
-                 st->move_code[i], modMask, root,
+                 el->move_code[i], modMask, root,
                  owner_events, pointer_mode, keyboard_mode);
       }
       for (int i = 0; i < 6; ++i) {
         KPM_BRET(KPM_ERR_X_GRAB, XGrabKey, st->xdo->xdpy,
-                 st->button_code[i], modMask, root,
+                 el->button_code[i], modMask, root,
                  owner_events, pointer_mode, keyboard_mode);
       }
     }
@@ -106,13 +135,15 @@ void kpm_el_destroy(kpm_el_t* el) {
     for (int modMask = 0; modMask < N_MOD_MASKS; ++modMask) {
       if (modMask & Mod2Mask)
         continue; //skip masks with NumLock
+      KPM_BCHK(KPM_ERR_X_GRAB, XUngrabKey, el->st->xdo->xdpy,
+               el->undo_code, modMask, root);
       for (int i = 0; i < 8; ++i) {
         KPM_BCHK(KPM_ERR_X_GRAB, XUngrabKey, el->st->xdo->xdpy,
-                 el->st->move_code[i], modMask, root);
+                 el->move_code[i], modMask, root);
       }
       for (int i = 0; i < 6; ++i) {
         KPM_BCHK(KPM_ERR_X_GRAB, XUngrabKey, el->st->xdo->xdpy,
-                 el->st->button_code[i], modMask, root);
+                 el->button_code[i], modMask, root);
       }
     }
   }
@@ -125,6 +156,12 @@ int kpm_el_step(kpm_el_t* el) {
   if (ev.type != KeyPress && ev.type != KeyRelease) {
     fprintf(stderr, "kp_el_step() ignoring unexpected ev.type %d\n", ev.type);
     return KPM_SUCCESS; //not a fatal error
+  }
+  if (ev.xkey.keycode == el->undo_code) {
+    if (ev.type == KeyPress)
+      KPM_RET(kpm_st_unmove, el->st);
+    //else: ignore the release event
+    return KPM_SUCCESS; // done
   }
   kpm_move_t move = to_move(el, ev.xkey.keycode);
   if (move != KPM_NULL_MOVE) {
