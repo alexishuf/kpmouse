@@ -22,9 +22,9 @@ static kpm_move_t to_move(kpm_el_t* el, KeyCode code) {
 }
 
 static kpm_button_t to_button(kpm_el_t* el, KeyCode code) {
-  for (int i = 0; i < 3; ++i)
+  for (int i = 0; i < 6; ++i)
     if (el->st->button_code[i] == code)
-      return i;
+      return i%3;
   return KPM_NULL_BUTTON;
 }
 
@@ -87,7 +87,7 @@ int kpm_el_init(kpm_el_t* el, kpm_st_t* st) {
                  st->move_code[i], modMask, root,
                  owner_events, pointer_mode, keyboard_mode);
       }
-      for (int i = 0; i < 3; ++i) {
+      for (int i = 0; i < 6; ++i) {
         KPM_BRET(KPM_ERR_X_GRAB, XGrabKey, st->xdo->xdpy,
                  st->button_code[i], modMask, root,
                  owner_events, pointer_mode, keyboard_mode);
@@ -110,7 +110,7 @@ void kpm_el_destroy(kpm_el_t* el) {
         KPM_BCHK(KPM_ERR_X_GRAB, XUngrabKey, el->st->xdo->xdpy,
                  el->st->move_code[i], modMask, root);
       }
-      for (int i = 0; i < 3; ++i) {
+      for (int i = 0; i < 6; ++i) {
         KPM_BCHK(KPM_ERR_X_GRAB, XUngrabKey, el->st->xdo->xdpy,
                  el->st->button_code[i], modMask, root);
       }

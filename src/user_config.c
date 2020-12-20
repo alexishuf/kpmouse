@@ -12,9 +12,12 @@ KeySym kpm_move_sym[8] = {
   XK_KP_Right      //KPM_CR
 };
 
-KeySym kpm_button_sym[3] = {
-  XK_KP_Divide,
-  XK_KP_Multiply,
-  XK_KP_Subtract
+KeySym kpm_button_sym[6] = {
+  XK_KP_Divide,   // left
+  XK_KP_Multiply, // middle
+  XK_KP_Subtract, // right
+  XK_KP_Begin,    // left
+  0,              // middle
+  0               // right
 };
 

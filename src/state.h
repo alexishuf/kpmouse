@@ -137,7 +137,7 @@ typedef struct kpm_st_s {
    * button_code[0:2] is the KeyCode that should trigger the left, middle or
    * right mouse button
    */
-  KeyCode button_code[3];
+  KeyCode button_code[6];
 
   /** libxdo context */
   xdo_t* xdo;

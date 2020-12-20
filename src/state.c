@@ -107,7 +107,7 @@ int kpm_st_init(kpm_st_t* st) {
       return KPM_ERR_NO_KEYCODE;
     }
   }
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 6; ++i) {
     st->button_code[i] = XKeysymToKeycode(st->xdo->xdpy, kpm_button_sym[i]);
     if (!st->button_code[i]) {
       fprintf(stderr, "No KeyCode for KeySym %lx of mouse button %d\n",
@@ -127,7 +127,7 @@ int kpm_st_init(kpm_st_t* st) {
          "step_x = %d,\n"
          "step_y = %d,\n"
          "move_code = {%d, %d, %d, %d, %d, %d, %d, %d}\n"
-         "move_button = {%d, %d, %d}\n"
+         "move_button = {%d, %d, %d, %d, %d, %d}\n"
          "}\n",
          st, st->w, st->h, st->log_steps,
          st->log_x, st->log_y, st->max_log_steps,
@@ -135,7 +135,8 @@ int kpm_st_init(kpm_st_t* st) {
          st->move_code[0], st->move_code[1], st->move_code[2],
          st->move_code[3], st->move_code[4], st->move_code[5],
          st->move_code[6], st->move_code[7],
-         st->button_code[0], st->button_code[1], st->button_code[2]);
+         st->button_code[0], st->button_code[1], st->button_code[2],
+         st->button_code[3], st->button_code[4], st->button_code[5]);
 #endif /*NDEBUG*/
   return KPM_SUCCESS;
 }

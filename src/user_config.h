@@ -51,8 +51,11 @@ extern KeySym kpm_move_sym[8];
  * kpm_button_sym[0]: left mouse button
  * kpm_button_sym[1]: middle mouse button
  * kpm_button_sym[2]: right mouse button
+ * kpm_button_sym[3]: ALTERNATIVE left mouse button
+ * kpm_button_sym[4]: ALTERNATIVE middle mouse button
+ * kpm_button_sym[5]: ALTERNATIVE right mouse button
  */
-extern KeySym kpm_button_sym[3];
+extern KeySym kpm_button_sym[6];
 
 #endif /*_KPMOUSE_USERCONFIG_H_*/
 

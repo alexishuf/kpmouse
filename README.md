@@ -36,17 +36,17 @@ Movements can be reversed using the 0 key on the numeric keypad. During logarith
 Movement terminates when any of these occur:
 
 - 4 seconds (`KPM_MOVE_TTL_MS`) elapsed since the last step
-- A mouse button press/release/click (`/`, `*`, `-`)
+- A mouse button press/release/click (`/`, `*`, `-`, `5`)
 
 Buttons
 ---------
 
 Mouse buttons:
-- Left button: `/`
+- Left button: `/` or `5`
 - Middle button: `*`
 - Right button: `-`
 
-Clicking is done by "clicking" the corresponding key. If the key is held by more than 400ms (`KPM_LONG_PRESS_MS`), the mouse button **down** event is sent, but the release of the key will **not** cause the corresponding mouse button **up** event. To trigger the button up event, "click" the mouse button key again.
+Clicking is done by "clicking" the corresponding key. If the key is held by more than 300ms (`KPM_LONG_PRESS_MS`), the mouse button **down** event is sent, but the release of the key will **not** cause the corresponding mouse button **up** event. To trigger the button up event, "click" the mouse button key again.
 
 With a mouse button **down** , situations may occur:
 - If a key different from the one that caused the button **down** event is pressed, the button **up** event will be of the mouse button that was originally pressed. That is, a long press of `/` followed by movement and then a click on `*` will count a drag using the left mouse button and will not cause a click of the middle button.
