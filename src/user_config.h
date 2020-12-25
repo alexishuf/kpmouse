@@ -25,7 +25,7 @@
  * movement. In linear mode, the window size is used only to determine step
  * size. Thus, movement can go beyond the movement window borders.
  */
-#define KPM_LINEAR_STEPS 5
+#define KPM_LINEAR_STEPS 6
 
 /**
  * How many millisconds of inactivity cancel a movement.

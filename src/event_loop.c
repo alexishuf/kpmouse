@@ -159,7 +159,7 @@ int kpm_el_step(kpm_el_t* el) {
   }
   if (ev.xkey.keycode == el->undo_code) {
     if (ev.type == KeyPress)
-      KPM_RET(kpm_st_unmove, el->st);
+      KPM_RET(kpm_st_reset, el->st);
     //else: ignore the release event
     return KPM_SUCCESS; // done
   }

@@ -6,7 +6,7 @@ kpmouse -- Mouse control from the numeric keypad
 Activation
 ------------
 
-`kpmouse` should run as a background process within the X session on which it will control the mouse. It will intercept `KeyPress` and `KeyRelease` events on the numeric keypad when **NumLock is off**. Other modifiers (Ctrl, Shift, Alt, Meta, Caps Lock) can bee activated in any combination and will not be affected, so that hitting '/' with Ctrl pressed will be interpreted as a Ctrl+Click. Numbers 1-9 control movement, keys /, * and - control the left, middle and right mouse buttons. Unlike in X11 mouse keys, 5 has no role and 0 servers to reverse the last movement step.
+`kpmouse` should run as a background process within the X session on which it will control the mouse. It will intercept `KeyPress` and `KeyRelease` events on the numeric keypad when **NumLock is off**. Other modifiers (Ctrl, Shift, Alt, Meta, Caps Lock) can bee activated in any combination and will not be affected, so that hitting '/' with Ctrl pressed will be interpreted as a Ctrl+Click. Numbers 1-9 control movement, keys /, * and - control the left, middle and right mouse buttons.
 
 Movement
 ----------
@@ -29,12 +29,13 @@ After executing the step, the movement window changes to have **half** its width
 
 These logarithmic steps can be executed up to `KPM_LOG_STEPS` (by default 4, see `user_config.h`) times in sequence. After this limit, movement becomes linear while obeying the same key-direction relation. The step size during linear movement is determined by dividing the width and height of the last logarithmic movement window by `KPM_LINEAR_STEPS` (by default 5). Once linear movement is activated, the linear movement will continue until the movement is **terminated**.
 
-Movements can be reversed using the `0` key on the numeric keypad. During logarithmic movement, reversion simply undoes the last movement, until the mouse pointer reaches the center of the screen. Once linear movement has started, reverting the last step will reverse **all linear steps**, reverting the movement to the last logarithmic movement (thus linear movement can start from scratch).
+Movement state can be reset with a single press on the `0` key. The pointer will not move but the next movement will apply as if the pointer were in the center of the screen. 
 
 ### Movement termination
 
 Movement terminates when any of these occur:
 
+- `0` is pressed
 - 4 seconds (`KPM_MOVE_TTL_MS`) elapsed since the last step
 - A mouse button press/release/click (`/`, `*`, `-`, `5`)
 
