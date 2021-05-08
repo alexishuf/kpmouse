@@ -152,7 +152,6 @@ void kpm_el_destroy(kpm_el_t* el) {
 int kpm_el_step(kpm_el_t* el) {
   XEvent ev = {0};
   KPM_RET2(KPM_ERR_X_NEXT_EVT, XNextEvent, el->st->xdo->xdpy, &ev);
-  assert(ev.type == KeyPress || ev.type == KeyRelease);
   if (ev.type != KeyPress && ev.type != KeyRelease) {
     fprintf(stderr, "kp_el_step() ignoring unexpected ev.type %d\n", ev.type);
     return KPM_SUCCESS; //not a fatal error
